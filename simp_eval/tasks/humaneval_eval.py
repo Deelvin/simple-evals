@@ -1,28 +1,20 @@
 """
 HumanEval: Evaluating Large Language Models Trained on Code
-Mark Chen and Jerry Tworek and Heewoo Jun and Qiming Yuan and Henrique Ponde de Oliveira Pinto and Jared Kaplan and Harri Edwards and Yuri Burda and Nicholas Joseph and Greg Brockman and Alex Ray and Raul Puri and Gretchen Krueger and Michael Petrov and Heidy Khlaaf and Girish Sastry and Pamela Mishkin and Brooke Chan and Scott Gray and Nick Ryder and Mikhail Pavlov and Alethea Power and Lukasz Kaiser and Mohammad Bavarian and Clemens Winter and Philippe Tillet and Felipe Petroski Such and Dave Cummings and Matthias Plappert and Fotios Chantzis and Elizabeth Barnes and Ariel Herbert-Voss and William Hebgen Guss and Alex Nichol and Alex Paino and Nikolas Tezak and Jie Tang and Igor Babuschkin and Suchir Balaji and Shantanu Jain and William Saunders and Christopher Hesse and Andrew N. Carr and Jan Leike and Josh Achiam and Vedant Misra and Evan Morikawa and Alec Radford and Matthew Knight and Miles Brundage and Mira Murati and Katie Mayer and Peter Welinder and Bob McGrew and Dario Amodei and Sam McCandlish and Ilya Sutskever and Wojciech Zaremba 
-https://arxiv.org/abs/2107.03374 https://github.com/openai/human-eval/ 
+Mark Chen and Jerry Tworek and Heewoo Jun and Qiming Yuan and Henrique Ponde de Oliveira Pinto and Jared Kaplan and Harri Edwards and Yuri Burda and Nicholas Joseph and Greg Brockman and Alex Ray and Raul Puri and Gretchen Krueger and Michael Petrov and Heidy Khlaaf and Girish Sastry and Pamela Mishkin and Brooke Chan and Scott Gray and Nick Ryder and Mikhail Pavlov and Alethea Power and Lukasz Kaiser and Mohammad Bavarian and Clemens Winter and Philippe Tillet and Felipe Petroski Such and Dave Cummings and Matthias Plappert and Fotios Chantzis and Elizabeth Barnes and Ariel Herbert-Voss and William Hebgen Guss and Alex Nichol and Alex Paino and Nikolas Tezak and Jie Tang and Igor Babuschkin and Suchir Balaji and Shantanu Jain and William Saunders and Christopher Hesse and Andrew N. Carr and Jan Leike and Josh Achiam and Vedant Misra and Evan Morikawa and Alec Radford and Matthew Knight and Miles Brundage and Mira Murati and Katie Mayer and Peter Welinder and Bob McGrew and Dario Amodei and Sam McCandlish and Ilya Sutskever and Wojciech Zaremba
+https://arxiv.org/abs/2107.03374 https://github.com/openai/human-eval/
 """
 
-import json
-import logging
-import multiprocessing
 import random
 import re
-from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from io import BytesIO
-from typing import Any, Tuple
 
-import blobfile as bf
-import tqdm
-from human_eval.data import HUMAN_EVAL, read_problems
+from human_eval.data import read_problems
 from human_eval.evaluation import estimate_pass_at_k
 from human_eval.execution import check_correctness  # , unsafe_execute
 
-from . import common
-from .common import HTML_JINJA
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simp_eval import common
+from simp_eval.common import HTML_JINJA
+from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 
 def evaluate_functional_correctness(
@@ -35,7 +27,6 @@ def evaluate_functional_correctness(
     Evaluates the functional correctness of generated samples, and writes
     results to f"{sample_file}_results.jsonl.gz"
     """
-    import copy
 
     # Check the generated samples against test suites.
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
@@ -71,7 +62,7 @@ class HumanEval(Eval):
         self._ks_passes = ks_passes
         self._timeout = timeout
 
-    def __call__(self, sampler: SamplerBase) -> EvalResult:
+    def __call__(self, sampler: SamplerBase, batch_size: int = 3) -> EvalResult:
         instruction = "Read the following function signature and docstring, and fully implement the function described. Your response should only contain the code for this function.\n"
 
         def find_code(completion):
@@ -85,10 +76,13 @@ class HumanEval(Eval):
 
         def fn(sample: dict[str, str]):
             prompt_messages = [
-                sampler._pack_mesage(role="user", content=instruction + sample["prompt"])
+                sampler._pack_mesage(
+                    role="user", content=instruction + sample["prompt"]
+                )
             ]
             completions = [
-                find_code(sampler(prompt_messages)) for _ in range(self._num_samples_per_task)
+                find_code(sampler(prompt_messages))
+                for _ in range(self._num_samples_per_task)
             ]
             results = evaluate_functional_correctness(sample, completions)
             total = len(results)
@@ -116,5 +110,5 @@ class HumanEval(Eval):
                 },
             )
 
-        results = common.map_with_progress(fn, self.examples, num_threads=3)
+        results = common.map_with_progress(fn, self.examples, batch_size)
         return common.aggregate_results(results)

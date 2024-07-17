@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any
+from omegaconf import OmegaConf
 
 Message = dict[str, Any]  # keys role, content
 MessageList = list[Message]
@@ -13,6 +14,15 @@ class SamplerBase:
 
     def __call__(self, message_list: MessageList) -> str:
         raise NotImplementedError
+
+    @classmethod
+    def create_from_arg_string(cls, args_string):
+        args_string = args_string.strip()
+        if not args_string:
+            return {}
+        arg_list = args_string.split(",")
+        args_dict = OmegaConf.to_object(OmegaConf.from_dotlist(arg_list))
+        return cls(**args_dict)
 
 
 @dataclass
@@ -44,5 +54,5 @@ class Eval:
     Base class for defining an evaluation.
     """
 
-    def __call__(self, sampler: SamplerBase) -> EvalResult:
+    def __call__(self, sampler: SamplerBase, batch_size: int) -> EvalResult:
         raise NotImplementedError

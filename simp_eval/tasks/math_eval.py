@@ -10,9 +10,9 @@ import re
 import blobfile as bf
 import pandas
 
-from . import common
-from .common import ANSWER_PATTERN, HTML_JINJA, check_equality
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simp_eval import common
+from simp_eval.common import ANSWER_PATTERN, HTML_JINJA, check_equality
+from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 QUERY_TEMPLATE = """
 Solve the following math problem step by step. The last line of your response should be of the form Answer: $ANSWER (without quotes) where $ANSWER is the answer to the problem.
@@ -24,9 +24,15 @@ Remember to put your answer on its own line after "Answer:", and you do not need
 
 
 class MathEval(Eval):
-    def __init__(self, equality_checker: SamplerBase, num_examples: int | None = None):
+    def __init__(
+        self,
+        equality_checker: SamplerBase | None = None,
+        num_examples: int | None = None,
+    ):
         df = pandas.read_csv(
-            bf.BlobFile("https://openaipublic.blob.core.windows.net/simple-evals/math_test.csv")
+            bf.BlobFile(
+                "https://openaipublic.blob.core.windows.net/simple-evals/math_test.csv"
+            )
         )
         examples = [row.to_dict() for _, row in df.iterrows()]
         if num_examples:
@@ -34,7 +40,7 @@ class MathEval(Eval):
         self.examples = examples
         self.equality_checker = equality_checker
 
-    def __call__(self, sampler: SamplerBase) -> EvalResult:
+    def __call__(self, sampler: SamplerBase, batch_size: int = 50) -> EvalResult:
         def fn(row: dict):
             prompt_messages = [
                 sampler._pack_message(content=QUERY_TEMPLATE.format(**row), role="user")
@@ -42,7 +48,9 @@ class MathEval(Eval):
             response_text = sampler(prompt_messages)
             match = re.search(ANSWER_PATTERN, response_text)
             extracted_answer = match.group(1) if match else None
-            score = float(check_equality(self.equality_checker, row["Answer"], extracted_answer))
+            score = float(
+                check_equality(self.equality_checker, row["Answer"], extracted_answer)
+            )
             html = common.jinja_env.from_string(HTML_JINJA).render(
                 prompt_messages=prompt_messages,
                 next_message=dict(content=response_text, role="assistant"),
@@ -53,5 +61,5 @@ class MathEval(Eval):
             convo = prompt_messages + [dict(content=response_text, role="assistant")]
             return SingleEvalResult(html=html, score=score, convo=convo)
 
-        results = common.map_with_progress(fn, self.examples)
+        results = common.map_with_progress(fn, self.examples, batch_size)
         return common.aggregate_results(results)

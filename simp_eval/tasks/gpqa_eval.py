@@ -10,17 +10,22 @@ import re
 import blobfile as bf
 import pandas
 
-from . import common
-from .common import ANSWER_PATTERN_MULTICHOICE, HTML_JINJA, format_multichoice_question
-from .types import Eval, EvalResult, MessageList, SamplerBase, SingleEvalResult
+from simp_eval import common
+from simp_eval.common import (
+    ANSWER_PATTERN_MULTICHOICE,
+    HTML_JINJA,
+    format_multichoice_question,
+)
+from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 
 class GPQAEval(Eval):
     def __init__(
         self,
-        n_repeats: int = 4,
+        n_repeats: int = 10,
         variant: str = "diamond",
-        num_examples: int | None = None,  # restrict to a subset of the data for debugging
+        num_examples: int
+        | None = None,  # restrict to a subset of the data for debugging
     ):
         df = pandas.read_csv(
             bf.BlobFile(
@@ -30,14 +35,16 @@ class GPQAEval(Eval):
         examples = [row.to_dict() for _, row in df.iterrows()]
         rng = random.Random(0)
         if num_examples:
-            assert n_repeats == 1, "n_repeats only supported for num_examples"
+            n_repeats = 1
             examples = rng.sample(examples, num_examples)
         examples = examples * n_repeats
-        examples = [example | {"permutation": rng.sample(range(4), 4)} for example in examples]
+        examples = [
+            example | {"permutation": rng.sample(range(4), 4)} for example in examples
+        ]
         self.examples = examples
         self.n_repeats = n_repeats
 
-    def __call__(self, sampler: SamplerBase) -> EvalResult:
+    def __call__(self, sampler: SamplerBase, batch_size: int = 50) -> EvalResult:
         def fn(row: dict):
             choices = [
                 row["Correct Answer"],
@@ -49,7 +56,11 @@ class GPQAEval(Eval):
             correct_index = choices.index(row["Correct Answer"])
             correct_answer = "ABCD"[correct_index]
             choices_dict = dict(
-                A=choices[0], B=choices[1], C=choices[2], D=choices[3], Question=row["Question"]
+                A=choices[0],
+                B=choices[1],
+                C=choices[2],
+                D=choices[3],
+                Question=row["Question"],
             )
             prompt_messages = [
                 sampler._pack_message(
@@ -69,8 +80,11 @@ class GPQAEval(Eval):
             )
             convo = prompt_messages + [dict(content=response_text, role="assistant")]
             return SingleEvalResult(
-                html=html, score=score, convo=convo, metrics={"chars": len(response_text)}
+                html=html,
+                score=score,
+                convo=convo,
+                metrics={"chars": len(response_text)},
             )
 
-        results = common.map_with_progress(fn, self.examples)
+        results = common.map_with_progress(fn, self.examples, batch_size)
         return common.aggregate_results(results)

@@ -1,8 +1,8 @@
 """
-MGSM: Multilingual Grade School Math Benchmark (MGSM) is a benchmark of grade-school math problems. 
+MGSM: Multilingual Grade School Math Benchmark (MGSM) is a benchmark of grade-school math problems.
 Language Models are Multilingual Chain-of-Thought Reasoners
 Freda Shi, Mirac Suzgun, Markus Freitag, Xuezhi Wang, Suraj Srivats, Soroush Vosoughi, Hyung Won Chung, Yi Tay, Sebastian Ruder, Denny Zhou, Dipanjan Das, Jason Wei
-https://arxiv.org/abs/2210.03057 reference: https://github.com/google-research/url-nlp 
+https://arxiv.org/abs/2210.03057 reference: https://github.com/google-research/url-nlp
 """
 
 import re
@@ -10,9 +10,9 @@ from typing import Optional
 
 import blobfile as bf
 
-from . import common
-from .mmlu_eval import HTML_JINJA
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simp_eval import common
+from simp_eval.tasks.mmlu_eval import HTML_JINJA
+from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 ALL_LANGUAGES = ["bn", "de", "en", "es", "fr", "ja", "ru", "sw", "te", "th", "zh"]
 LATIN_LANGUAGES = ["de", "en", "es", "fr", "sw"]
@@ -131,7 +131,8 @@ def get_all_examples() -> list[dict[str, str]]:
 class MGSMEval(Eval):
     def __init__(
         self,
-        num_examples_per_lang: int = 250,  # restrict to a subset of the data for debugging
+        num_examples: int
+        | None = None,  # restrict to a subset of the data for debugging
         languages: Optional[list[str]] = ALL_LANGUAGES,
     ):
         if languages is None:
@@ -144,7 +145,9 @@ class MGSMEval(Eval):
                         f"It should be one in {ALL_LANGUAGES}"
                     )
         self._languages = languages
-        self._num_examples_per_lang = num_examples_per_lang
+        self._num_examples_per_lang = 250
+        if num_examples:
+            self._num_examples_per_lang = int(num_examples / len(languages))
 
         examples = []
         for lang in self._languages:
@@ -152,10 +155,12 @@ class MGSMEval(Eval):
             examples.extend(lang_examples[: self._num_examples_per_lang])
         self.examples = examples
 
-    def __call__(self, sampler: SamplerBase) -> EvalResult:
+    def __call__(self, sampler: SamplerBase, batch_size: int = 50) -> EvalResult:
         def fn(example: dict[str, str]):
             language = example["lang"]
-            latin_language = "group_latin" if language in LATIN_LANGUAGES else "group_non_latin"
+            latin_language = (
+                "group_latin" if language in LATIN_LANGUAGES else "group_non_latin"
+            )
             correct_answer = example["targets"]
             instructoin = LANG_TO_INSTRUCTIONS[language]
             prompt_messages = [
@@ -165,7 +170,7 @@ class MGSMEval(Eval):
             ]
             try:
                 response_text = sampler(prompt_messages)
-            except Exception as e:
+            except Exception:
                 response_text = ""
 
             answer_prefix = LANG_TO_ANSWER_PREFIX[language]
@@ -187,5 +192,5 @@ class MGSMEval(Eval):
                 metrics={language: score, latin_language: score},
             )
 
-        results = common.map_with_progress(fn, self.examples)
+        results = common.map_with_progress(fn, self.examples, batch_size)
         return common.aggregate_results(results, default_stats=("mean", "std"))

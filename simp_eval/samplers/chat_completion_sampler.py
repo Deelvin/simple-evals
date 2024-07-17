@@ -1,17 +1,13 @@
-import base64
 import time
 from typing import Any
+import os
 
 import openai
 from openai import OpenAI
 
-from ..types import MessageList, SamplerBase
+from simp_eval.types import MessageList, SamplerBase
 
-OPENAI_SYSTEM_MESSAGE_API = "You are a helpful assistant."
-OPENAI_SYSTEM_MESSAGE_CHATGPT = (
-    "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture."
-    + "\nKnowledge cutoff: 2023-12\nCurrent date: 2024-04-01"
-)
+DEFAULT_SYSTEM_MESSAGE = "You are a helpful assistant."
 
 
 class ChatCompletionSampler(SamplerBase):
@@ -21,22 +17,27 @@ class ChatCompletionSampler(SamplerBase):
 
     def __init__(
         self,
-        model: str = "gpt-3.5-turbo",
-        system_message: str | None = None,
-        temperature: float = 0.5,
+        model_name: str,
+        url: str,
+        system_message: str | None = DEFAULT_SYSTEM_MESSAGE,
+        temperature: float = 0.0,
         max_tokens: int = 1024,
     ):
-        self.api_key_name = "OPENAI_API_KEY"
-        self.client = OpenAI()
-        # using api_key=os.environ.get("OPENAI_API_KEY")  # please set your API_KEY
-        self.model = model
+        token = os.environ.get("OCTOAI_TOKEN", None)
+        assert token is not None, "Set OCTOAI_TOKEN"
+        self.client = OpenAI(base_url=url + "/v1", api_key=token)
+        self.model_name = model_name
         self.system_message = system_message
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.image_format = "url"
 
     def _handle_image(
-        self, image: str, encoding: str = "base64", format: str = "png", fovea: int = 768
+        self,
+        image: str,
+        encoding: str = "base64",
+        format: str = "png",
+        fovea: int = 768,
     ):
         new_image = {
             "type": "image_url",
@@ -54,12 +55,14 @@ class ChatCompletionSampler(SamplerBase):
 
     def __call__(self, message_list: MessageList) -> str:
         if self.system_message:
-            message_list = [self._pack_message("system", self.system_message)] + message_list
+            message_list = [
+                self._pack_message("system", self.system_message)
+            ] + message_list
         trial = 0
         while True:
             try:
                 response = self.client.chat.completions.create(
-                    model=self.model,
+                    model=self.model_name,
                     messages=message_list,
                     temperature=self.temperature,
                     max_tokens=self.max_tokens,

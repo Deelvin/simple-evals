@@ -43,7 +43,11 @@ class ClaudeCompletionSampler(SamplerBase):
         self.image_format = "base64"
 
     def _handle_image(
-        self, image: str, encoding: str = "base64", format: str = "png", fovea: int = 768
+        self,
+        image: str,
+        encoding: str = "base64",
+        format: str = "png",
+        fovea: int = 768,
     ):
         new_image = {
             "type": "image",

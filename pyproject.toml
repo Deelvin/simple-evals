@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "simp_eval"
+version = "0.1.0"
+authors = ["Suslova Barbara <barbara.suslova@deelvin.com>"]
+description = ""
+packages = [{include = "simp_eval"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+absl-py = "*"
+pandas = "*"
+jinja2 = "*"
+tqdm = "*"
+scipy = "*"
+jsonlines = "*"
+tabulate = "*"
+requests = "*"
+numpy = "*"
+sympy = "*"
+antlr4-python3-runtime = "4.11"
+human_eval = "*"
+openai = "*"
+omegaconf = "^2.2"
+blobfile = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
