@@ -1,3 +1,33 @@
+# OctoAI
+Commands to install repo
+```
+poetry config virtualenvs.in-project true
+python3 -m venv .venv
+source .venv/bin/activate
+poetry install
+```
+The example of a command to run the evaluation:
+```bash
+python3 main.py --sampler openai --model_args="model_name=meta-llama-3-8b,url=http://127.0.0.1:9001" --tasks drop,mgsm
+```
+
+Available flags with a description and options:
+
+- `--sampler` - the backend for evaluations (`openai`)
+
+- `--model_args` - parameters for the model (`model_name`, `url`, `system_message`, `temperature`, `max_tokens`)
+
+- `--tasks` - if the parameter isn't set all tasks will be used (`mmlu`, `math`, `gpqa`, `mgsm`, `drop`, `humaneval`)
+
+- `--judge_model` - parameters for the judge model which is used only in the math task (`model_name`, `url`, `system_message`, `temperature`, `max_tokens`)
+
+- `--batch_size` - the number of parallel workers
+
+- `--limit` - the number of examples to evaluate for the task, only for debug (int)
+
+- `--output_path` - results will be saved in the `.logs/<output_path>/` dir
+
+
 # Overview
 This repository contains a lightweight library for evaluating language models.
 We are open sourcing it so we can be transparent about the accuracy numbers we're publishing alongside our latest models (starting with `gpt-4-turbo-2024-04-09` and `gpt-4o`).
@@ -33,7 +63,7 @@ We have implemented sampling interfaces for the following language model APIs:
 
 - OpenAI: https://platform.openai.com/docs/overview
 - Claude: https://www.anthropic.com/api
-  
+
 Make sure to set the `*_API_KEY` environment variables before using these APIs.
 
 ## Setup
@@ -56,7 +86,7 @@ For the [Anthropic API](https://docs.anthropic.com/claude/docs/quickstart-guide)
 pip install anthropic
 ```
 
-## Demo 
+## Demo
 ```bash
 python -m simple-evals.demo
 ```
@@ -90,10 +120,10 @@ This will launch evaluations through the OpenAI API.
 
 [^1]:chatgpt system message: "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.\nKnowledge cutoff: 2023-12\nCurrent date: 2024-04-01"
 [^2]:assistant system message in [OpenAI API doc](https://platform.openai.com/docs/api-reference/introduction): "You are a helpful assistant." .
-[^3]:claude-3 empty system message: suggested by Anthropic API doc, and we have done limited experiments due to [rate limit](https://docs.anthropic.com/claude/reference/rate-limits) issues, but we welcome PRs with alternative choices. 
-[^4]:claude-3 lmsys system message: system message in LMSYS [Fast-chat open source code](https://github.com/lm-sys/FastChat/blob/7899355ebe32117fdae83985cf8ee476d2f4243f/fastchat/conversation.py#L894): "The assistant is Claude, created by Anthropic. The current date is {{currentDateTime}}. Claude's knowledge base was last updated ... ". We have done limited experiments due to [rate limit](https://docs.anthropic.com/claude/reference/rate-limits) issues, but we welcome PRs with alternative choices. 
+[^3]:claude-3 empty system message: suggested by Anthropic API doc, and we have done limited experiments due to [rate limit](https://docs.anthropic.com/claude/reference/rate-limits) issues, but we welcome PRs with alternative choices.
+[^4]:claude-3 lmsys system message: system message in LMSYS [Fast-chat open source code](https://github.com/lm-sys/FastChat/blob/7899355ebe32117fdae83985cf8ee476d2f4243f/fastchat/conversation.py#L894): "The assistant is Claude, created by Anthropic. The current date is {{currentDateTime}}. Claude's knowledge base was last updated ... ". We have done limited experiments due to [rate limit](https://docs.anthropic.com/claude/reference/rate-limits) issues, but we welcome PRs with alternative choices.
 [^5]:claude-3 reports: [https://www.anthropic.com/news/claude-3-family](https://www.anthropic.com/news/claude-3-family).
-[^6]:gemini-1.5 reports: [https://goo.gle/GeminiV1-5](https://goo.gle/GeminiV1-5), we dont have rerun results due to [rate_limit](https://ai.google.dev/pricing) issues and paid-as-you-go version are still "coming at May 14" by the time of this study on 05/11. 
+[^6]:gemini-1.5 reports: [https://goo.gle/GeminiV1-5](https://goo.gle/GeminiV1-5), we dont have rerun results due to [rate_limit](https://ai.google.dev/pricing) issues and paid-as-you-go version are still "coming at May 14" by the time of this study on 05/11.
 [^7]:Llama 3 tech report: [https://ai.meta.com/blog/meta-llama-3/](https://ai.meta.com/blog/meta-llama-3/). Note Llama 400b is still training and these numbers are based on the best of their pretrain/instruct Llama 400b numbers.
 
 
