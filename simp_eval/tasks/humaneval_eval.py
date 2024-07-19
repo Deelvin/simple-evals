@@ -66,7 +66,7 @@ class HumanEval(Eval):
         instruction = "Read the following function signature and docstring, and fully implement the function described. Your response should only contain the code for this function.\n"
 
         def find_code(completion):
-            pattern = re.compile(r"```python\n(.*?)```", re.DOTALL)
+            pattern = re.compile(r"```(?:python\n)?(.*?)```", re.DOTALL)
             matches = pattern.findall(completion)
             extracted_answer = matches[0] if len(matches) >= 1 else completion
             extracted_answer = extracted_answer[
@@ -76,7 +76,7 @@ class HumanEval(Eval):
 
         def fn(sample: dict[str, str]):
             prompt_messages = [
-                sampler._pack_mesage(
+                sampler._pack_message(
                     role="user", content=instruction + sample["prompt"]
                 )
             ]
