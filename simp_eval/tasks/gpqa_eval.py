@@ -7,8 +7,8 @@ https://arxiv.org/abs/2311.12022
 import random
 import re
 
-import blobfile as bf
 import pandas
+import urllib.request
 
 from simp_eval import common
 from simp_eval.common import (
@@ -28,7 +28,7 @@ class GPQAEval(Eval):
         | None = None,  # restrict to a subset of the data for debugging
     ):
         df = pandas.read_csv(
-            bf.BlobFile(
+            urllib.request.urlopen(
                 f"https://openaipublic.blob.core.windows.net/simple-evals/gpqa_{variant}.csv"
             )
         )

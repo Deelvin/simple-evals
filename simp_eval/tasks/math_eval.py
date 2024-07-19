@@ -7,8 +7,8 @@ https://arxiv.org/abs/2103.03874
 import random
 import re
 
-import blobfile as bf
 import pandas
+import urllib.request
 
 from simp_eval import common
 from simp_eval.common import ANSWER_PATTERN, HTML_JINJA, check_equality
@@ -30,7 +30,7 @@ class MathEval(Eval):
         num_examples: int | None = None,
     ):
         df = pandas.read_csv(
-            bf.BlobFile(
+            urllib.request.urlopen(
                 "https://openaipublic.blob.core.windows.net/simple-evals/math_test.csv"
             )
         )

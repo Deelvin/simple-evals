@@ -5,7 +5,7 @@ from .math_eval import MathEval
 from .mgsm_eval import MGSMEval
 from .mmlu_eval import MMLUEval
 
-TASK_REGISTRY = {
+ALL_TASKS = {
     "mmlu": MMLUEval,
     "math": MathEval,
     "gpqa": GPQAEval,
@@ -13,4 +13,3 @@ TASK_REGISTRY = {
     "drop": DropEval,
     "humaneval": HumanEval,
 }
-ALL_TASKS = sorted(list(TASK_REGISTRY))

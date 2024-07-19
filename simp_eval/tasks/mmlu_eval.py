@@ -7,8 +7,8 @@ https://arxiv.org/abs/2009.03300
 import random
 import re
 
-import blobfile as bf
 import pandas
+import urllib.request
 
 from simp_eval import common
 from simp_eval.common import (
@@ -82,7 +82,7 @@ subject2category = {
 class MMLUEval(Eval):
     def __init__(self, num_examples: int | None = None):
         df = pandas.read_csv(
-            bf.BlobFile(
+            urllib.request.urlopen(
                 "https://openaipublic.blob.core.windows.net/simple-evals/mmlu.csv"
             )
         )
