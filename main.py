@@ -20,7 +20,7 @@ def parse_args():
         help="Limit the number of examples per task.",
     )
     parser.add_argument("--judge_model", default=None)
-    parser.add_argument("--batch_size", default=1)
+    parser.add_argument("--batch_size", type=int, default=1)
 
     return parser.parse_args()
 
