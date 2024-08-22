@@ -12,9 +12,9 @@ from human_eval.data import read_problems
 from human_eval.evaluation import estimate_pass_at_k
 from human_eval.execution import check_correctness  # , unsafe_execute
 
-from simp_eval import common
-from simp_eval.common import HTML_JINJA
-from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simple_evals import common
+from simple_evals.common import HTML_JINJA
+from simple_evals.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 
 def evaluate_functional_correctness(

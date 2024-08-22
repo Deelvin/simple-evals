@@ -5,7 +5,7 @@ import os
 import openai
 from openai import OpenAI
 
-from simp_eval.types import MessageList, SamplerBase
+from simple_evals.types import MessageList, SamplerBase
 
 DEFAULT_SYSTEM_MESSAGE = "You are a helpful assistant."
 

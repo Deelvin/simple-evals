@@ -4,7 +4,7 @@ import argparse
 import pandas as pd
 import pathlib
 
-from simp_eval import common, tasks, samplers
+from simple_evals import common, tasks, samplers
 
 
 def parse_args():

@@ -11,9 +11,9 @@ import io
 
 import urllib.request
 
-from simp_eval import common
-from simp_eval.tasks.mmlu_eval import HTML_JINJA
-from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simple_evals import common
+from simple_evals.tasks.mmlu_eval import HTML_JINJA
+from simple_evals.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 ALL_LANGUAGES = ["bn", "de", "en", "es", "fr", "ja", "ru", "sw", "te", "th", "zh"]
 LATIN_LANGUAGES = ["de", "en", "es", "fr", "sw"]
