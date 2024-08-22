@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from typing import Any
-from omegaconf import OmegaConf
 
 Message = dict[str, Any]  # keys role, content
 MessageList = list[Message]
@@ -21,7 +20,7 @@ class SamplerBase:
         if not args_string:
             return {}
         arg_list = args_string.split(",")
-        args_dict = OmegaConf.to_object(OmegaConf.from_dotlist(arg_list))
+        args_dict = dict(arg.split('=') for arg in arg_list)
         return cls(**args_dict)
 
 
