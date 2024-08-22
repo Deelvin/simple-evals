@@ -10,13 +10,13 @@ import re
 import pandas
 import urllib.request
 
-from simp_eval import common
-from simp_eval.common import (
+from simple_evals import common
+from simple_evals.common import (
     ANSWER_PATTERN_MULTICHOICE,
     HTML_JINJA,
     format_multichoice_question,
 )
-from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simple_evals.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 subject2category = {
     "abstract_algebra": "stem",

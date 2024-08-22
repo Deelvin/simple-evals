@@ -10,9 +10,9 @@ import re
 import pandas
 import urllib.request
 
-from simp_eval import common
-from simp_eval.common import ANSWER_PATTERN, HTML_JINJA, check_equality
-from simp_eval.types import Eval, EvalResult, SamplerBase, SingleEvalResult
+from simple_evals import common
+from simple_evals.common import ANSWER_PATTERN, HTML_JINJA, check_equality
+from simple_evals.types import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 QUERY_TEMPLATE = """
 Solve the following math problem step by step. The last line of your response should be of the form Answer: $ANSWER (without quotes) where $ANSWER is the answer to the problem.
