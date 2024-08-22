@@ -1,28 +1,27 @@
-[tool.poetry]
-name = "simp_eval"
+[project]
+name = "simple_eval"
 version = "0.1.0"
-authors = ["Suslova Barbara <barbara.suslova@deelvin.com>"]
+requires-python = ">=3.10"
 description = ""
-packages = [{include = "simp_eval"}]
+readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-absl-py = "*"
-pandas = "*"
-jinja2 = "*"
-tqdm = "*"
-scipy = "*"
-jsonlines = "*"
-tabulate = "*"
-requests = "*"
-numpy = "*"
-sympy = "*"
-antlr4-python3-runtime = "4.11"
-human_eval = "*"
-openai = "*"
-omegaconf = "^2.2"
-blobfile = "*"
+dependencies = [
+    "absl-py",
+    "pandas",
+    "jinja2",
+    "tqdm",
+    "scipy",
+    "jsonlines",
+    "tabulate",
+    "requests",
+    "numpy",
+    "sympy",
+    "antlr4-python3-runtime ==4.11",
+    "human_eval",
+    "openai",
+    "blobfile"
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
