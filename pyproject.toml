@@ -1,5 +1,5 @@
 [project]
-name = "simple_eval"
+name = "simple_evals"
 version = "0.1.0"
 requires-python = ">=3.10"
 description = ""
